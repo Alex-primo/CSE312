@@ -2,7 +2,7 @@
 ## CSE312 Group Project
 
 ### Meeting Time:
-Tuesdays 2PM-3PM
+Mondays 2PM-3PM
 
 ### What Language are we using: 
 Python
