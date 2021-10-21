@@ -17,7 +17,7 @@ Users can upload unique avatars to express themselves while chatting
 Users will interact with a single pixel in large pixel canvas to make pixel art with other users
 
 ### Project Requirements:
-- [ ] create directory - "reports"
+- [ ] Create directory - "reports"
 - [ ] Checkpoint - Week 11 - all reports
 - [ ] Docker compose
 - [ ] User Accounts with Secure Authentication
@@ -27,11 +27,11 @@ Users will interact with a single pixel in large pixel canvas to make pixel art 
   - [ ] Save user profile
 - [ ] Users to see all users who are currently logged in
 - [ ] Users can DM each other
-  - [ ] notification with option to reply
+  - [ ] Notification with option to reply
 - [ ] Users can share mutlimedia content
-  - [ ] store the content
+  - [ ] Store the content
 - [ ] Live interactions between users via WebSockets
-  - [ ] cannot be text
+  - [ ] Cannot be text
 - [ ] Security
   - [ ] HTML/JS Injection
   - [ ] SQL Injection
