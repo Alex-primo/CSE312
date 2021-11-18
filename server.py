@@ -19,16 +19,48 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             headersDict = makeHeaderDict(received_data)
             print(headersDict)
 
-            with open("login.html", "rb") as file:
-                b = file.read()
-                    
+            if headersDict['PATH'] == "/":
+                with open("LoginRegister.html", "rb") as file:
+                    b = file.read()
+                        
                 respond = "HTTP/1.1 200 OK\r\n"
                 respond += "Content-Type: text/html; charset=utf-8\r\n"
                 respond += "X-Content-Type-Options: nosniff\r\n"
                 respond += "ContentLength: " + str(len(b)) + "\r\n"
                 respond += "\r\n"
-                
+                    
                 self.request.sendall(respond.encode() + b)
+
+            elif headersDict['PATH'] == "/LogReg.js":
+                with open("LogReg.js", "rb") as file:
+                    b = file.read()
+                
+                respond = "HTTP/1.1 200 OK\r\n"
+                respond += "Content-Type: text/javascript; charset=utf-8\r\n"
+                respond += "X-Content-Type-Options: nosniff\r\n"
+                respond += "ContentLength: " + str(len(b)) + "\r\n"
+                respond += "\r\n"
+                self.request.sendall(respond.encode() + b)
+
+            elif headersDict['PATH'] == "/style.css":
+                with open("style.css", "rb") as file:
+                    b = file.read()
+                
+                respond = "HTTP/1.1 200 OK\r\n"
+                respond += "Content-Type: text/css; charset=utf-8\r\n"
+                respond += "X-Content-Type-Options: nosniff\r\n"
+                respond += "ContentLength: " + str(len(b)) + "\r\n"
+                respond += "\r\n"
+                self.request.sendall(respond.encode() + b)
+
+            elif headersDict['PATH'] == "/favicon.ico":
+                respond = "HTTP/1.1 200 OK\r\n"
+                respond += "Content-Type: text/html\r\n"
+                respond += "X-Content-Type-Options: nosniff\r\n"
+                respond += "ContentLength: 11\r\n"
+                respond += "\r\n"
+                respond += "hello world"
+                self.request.sendall(respond.encode())
 
 
 #convert the headers as BYTES into a dictionary
