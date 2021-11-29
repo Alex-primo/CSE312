@@ -22,7 +22,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             print(received_data)
 
             headersDict = makeHeaderDict(received_data)
-            print(headersDict)
+            #print(headersDict)
 
             if headersDict['PATH'] == "/":
                 with open("LoginRegister.html", "rb") as file:
@@ -101,6 +101,33 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     print("recieved socket data")
                     webSocketData(self,received_data,headersDict['PATH'])
 
+            elif headersDict['REQUEST'] == 'POST':
+                if headersDict['PATH'] == '/image-upload':
+                    temp = parseImage(headersDict,self)     #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
+        
+
+def parseImage(headerDict, TCP):
+
+    if int(headerDict['Content-Length']) > 2048:
+            notDone = True
+            while notDone:
+                temp = TCP.request.recv(2048)
+                headerDict['DATA'] += temp
+                if len(temp) < 2048:
+                    notDone = False
+
+    boundaryKey = "--"+headerDict['Content-Type'][headerDict['Content-Type'].index("boundary=")+9:]
+    lastboundaryKey = ('\r\n'+boundaryKey+"--\r\n").encode()
+    boundaryKey = (boundaryKey + "\r\n").encode()
+    dataSplit = headerDict['DATA'].split('\r\n\r\n'.encode())
+    
+    dataSplit[0] = dataSplit[0].decode()
+    contentType = dataSplit[0][dataSplit[0].index('Content-Type: ')+14:]
+
+    if contentType == 'image/jpeg' or contentType == 'image/png':
+        return dataSplit[1][:dataSplit[1].index(lastboundaryKey)]
+    return None
+
 
 #handle when a socket sends data, and push that data to all other sockets
 def webSocketData(tcp,data,socketType):
@@ -108,9 +135,9 @@ def webSocketData(tcp,data,socketType):
     global __colorSockets__
     if (data[0] & 15) == 8:   #closed connection
         if(socketType) == "/chatsocket":
-                __chatSockets__.delete(tcp)
+                __chatSockets__.remove(tcp)
         elif(socketType) == "/colorsocket":
-                __colorSockets__.delete(tcp)
+                __colorSockets__.remove(tcp)
         return None
 
     frameBytes = 0  
