@@ -9,6 +9,7 @@ COPY . .
 EXPOSE 8000
 
 RUN pip install pymongo
+RUN pip install bcrypt
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 RUN chmod +x /wait

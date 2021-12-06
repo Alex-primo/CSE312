@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<form action="/image-upload" id="image-form" method="post" enctype="multipart/form-data">
+    <label for="form-file">Image: </label>
+    <input id="form-file" type="file" name="upload">
+    <br/>
+    <label for="image-form-name">Caption: </label>
+    <input id="image-form-name" type="text" name="name">
+    <!-- <input {{a token}} name="xsrf_token" hidden> -->
+    
+    <input type="submit" value="Submit">    
+ </form>
+<body>
+    <!-- <h1>{{name and comment}}</h1> -->
+    <h2>{{up load image}}</h2>
+
+    <form action="/image-upload" id="image-form" method="post" enctype="multipart/form-data">
+        <label for="form-file">TESTIMAGE: </label>
+        <input id="form-file" type="file" name="upload">
+        <input type="submit" value="Submit">
+    </form>
+<!-- {{loop images}} -->
+<!-- <img src={{image}}>
+{{end_loop}} -->
+
+</body>
+</html>
