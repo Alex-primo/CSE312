@@ -179,7 +179,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         r = r + "<form action=" + "/dm" + " " + "id=" + "dm-form" + " " +  "method=" + "post" + " " +  "enctype=" + "multipart/form-data" + "><label for=" + "text-form-name" + ">Your Username: </label><input id=" + "text-form-message" + " " +  "type=" + "text" + " " +  "name=" + "DM2" + "><br/><label for=" + "form-message" + ">Message: </label><input id="+ "form-message" + " " +  "type=" +"text" + " " +  "name="+ i + "><input type=" + "submit" + " " +  "value=" + "Submit" + "></form><br>"
                                                                                                                                                                                                                 #this could be a hidden feild or just use there token. The username of the current user/sender of the DM                                                                                                                                                             # i is the username of the person you are sending the DM to
                     b = b.replace(l, r)
-                    tokenFound = findToken(data)
+                    tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
                     if tokenFound != None:
                         l2 = "{{login mess}}"
                         r2 = "<h1>" + str(tokenFound) + " is signed in </h1>"
@@ -251,7 +251,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         b = b.replace(l, "<h1>Login failed</h1>")
                         print("HIIIIIIIIIIIIIIIII")
                         print(b)
-                        tokenFound = findToken(data)
+                        tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
                         if tokenFound != None:
                             c = "{{token found}}"
                             r = "<h1>Welcome back " + str(tokenFound) + "!</h1>"
@@ -282,7 +282,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                             b = b.replace(m, "")
                             l = "{{login mess}}"
                             b = b.replace(l, "<h1>Login failed</h1>")
-                            tokenFound = findToken(data)
+                            tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
                             if tokenFound != None:
                                 c = "{{token found}}"
                                 r = "<h1>Welcome back " + str(tokenFound) + "!</h1>"
@@ -318,7 +318,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         for i in UsersLoggedIn:
                             r = r + "<h5>" + i + " is currently logged in </h5><br>"
                         b = b.replace(l, r)
-                        tokenFound = findToken(data)
+                        tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
                         if tokenFound != None:
                             c = "{{token found}}"
                             r = "<h1>Welcome back " + str(tokenFound) + "!</h1>"
@@ -328,14 +328,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                             r = ""
                             b = b.replace(c, r)
                     
-                    # respond = "HTTP/1.1 200 OK\r\n"
-                    # respond += "Content-Type: text/html; charset=utf-8\r\n"
-                    # respond += "X-Content-Type-Options: nosniff\r\n"
-                    # respond += "Set-Cookie: id=" + str(cookToken) + "; Max-Age=3600; HttpOnly\r\n"
-                    # respond += "ContentLength: " + str(len(b)) + "\r\n"
-                    # respond += "\r\n"
-                    # print("I'm Sending Unwanted data", respond)
-                    # self.request.sendall(respond.encode() + b.encode())
                     respond = "HTTP/1.1 301 Moved Permanently\r\n"
                     respond += "X-Content-Type-Options: nosniff\r\n"
                     respond += "Set-Cookie: id=" + str(cookToken) + "; Max-Age=3600; HttpOnly\r\n"
@@ -348,64 +340,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if headersDict['REQUEST'] == 'POST':
                     print("Profile Image", headersDict['PATH'])
                     temp = parseImage(headersDict,self)     #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
-                    print("JELLO",temp)
-                # parseImage(headersDict,self)    #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
-
-
-                   # print("Profile Image parseimage")
-
-    # print("content len",headerDict['Content-Length'])
-                # if int(headersDict['Content-Length']) > 2048:
-                #         notDone = True
-                #         while notDone == True:
-                #             temp = self.request.recv(2048)
-                #             # print("temp", len(temp), temp)
-                #             if headersDict.get('DATA') == "":
-                #                 headersDict['DATA'] = temp
-                #                 # print("data", headerDict['DATA'])
-                #                 if len(temp) < 2048:
-                #                     notDone = False
-                #             elif headersDict.get('DATA') == " ":
-                #                 headersDict['DATA'] = temp
-                #                 # print("data", headerDict['DATA'])
-                #                 if len(temp) < 2048:
-                #                     notDone = False
-                #             else:
-                #                 headersDict['DATA'] += temp
-                #                 # print("data", headerDict['DATA'])
-                #                 if len(temp) < 2048:
-                #                     notDone = False
-                # print("data", headersDict['DATA'])
-                # # print("Profile Image have all")
-
-                # boundaryKey = "--"+headersDict['Content-Type'][headersDict['Content-Type'].index("boundary=")+9:]
-                # lastboundaryKey = ('\r\n'+boundaryKey+"--\r\n").encode()
-                # boundaryKey = (boundaryKey + "\r\n").encode()
-                # dataSplit = headersDict['DATA'].split('\r\n\r\n'.encode())
-                # print("#1", dataSplit[1])
-                
-                # dataSplit[0] = dataSplit[0].decode()
-                # contentType = dataSplit[0][dataSplit[0].index('Content-Type: ')+14:]
-                # print(contentType)
-                # if contentType == 'image/jpeg' or contentType == 'image/png':
-                #     s = dataSplit[1].split(lastboundaryKey)
-                #     print(s)
-                #     s2 = s[0]
-                #     print("here :)")
-                #     print("s", s2)
-                #     data =  headersDict['DATA']
-                #     username = findToken(data)
-                #     f = "image/" + username
-                #     with open(f, "wb") as file:
-                #         file.write(s2)
-                #     print("HERE RETURN", s2)
-
-
-                    print("Profile Image Uploaded here")
 
                     data = received_data.decode()
                     username = findToken(data)
-                    print(username, data)
                     f = "image/" + username
                     with open(f, "wb") as file:
                         file.write(temp)
@@ -687,61 +624,6 @@ def parseImage(headerDict, TCP):
         return dataSplit[1][:dataSplit[1].index(lastboundaryKey)]
     return None
 
-# def parseImage(headerDict, TCP):
-#     # print("Profile Image parseimage")
-
-#     # print("content len",headerDict['Content-Length'])
-#     if int(headerDict['Content-Length']) > 2048:
-#             notDone = True
-#             while notDone == True:
-#                 temp = TCP.request.recv(2048)
-#                 # print("temp", len(temp), temp)
-#                 if headerDict.get('DATA') == "":
-#                     headerDict['DATA'] = temp
-#                     # print("data", headerDict['DATA'])
-#                     if len(temp) < 2048:
-#                         notDone = False
-#                 elif headerDict.get('DATA') == " ":
-#                     headerDict['DATA'] = temp
-#                     # print("data", headerDict['DATA'])
-#                     if len(temp) < 2048:
-#                         notDone = False
-#                 else:
-#                     headerDict['DATA'] += temp
-#                     # print("data", headerDict['DATA'])
-#                     if len(temp) < 2048:
-#                         notDone = False
-#     # print("data", headerDict['DATA'])
-#     # print("Profile Image have all")
-
-#     boundaryKey = "--"+headerDict['Content-Type'][headerDict['Content-Type'].index("boundary=")+9:]
-#     lastboundaryKey = ('\r\n'+boundaryKey+"--\r\n").encode()
-#     boundaryKey = (boundaryKey + "\r\n").encode()
-#     # print("Profile Image key", boundaryKey, lastboundaryKey)
-#     dataSplit = headerDict['DATA'].split('\r\n\r\n'.encode())
-#     # print("Profile Image split data", dataSplit)
-#     dataSplit[0] = dataSplit[0].decode()
-#     contentType = dataSplit[0][dataSplit[0].index('Content-Type: ')+14:]
-
-#     # print("Image", contentType, dataSplit[1][:dataSplit[1].index(lastboundaryKey)])
-#     if contentType == 'image/jpeg':
-#         print("JPEG")
-#     if contentType == 'image/png':
-#             print("PNG")
-#     if contentType == 'image/jpeg' or contentType == 'image/png':
-#         print("Before s")
-#         s = dataSplit[1][:dataSplit[1].index(lastboundaryKey)]
-#         data =  headerDict['DATA']
-#         username = findToken(data)
-#         f = "image/" + username
-#         with open(f, "wb") as file:
-#             file.write(s)
-#         print("HERE RETURN", s)
-        # return s
-    
-    # else:
-    #     print("HERE RETURN NOOOOOOO")
-    #     return None
 
 def noHTML(x):
     b = x.replace("&", "&amp")
