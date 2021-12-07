@@ -660,7 +660,7 @@ def webSocketData(tcp,data,socketType,username):
     global __chatSockets__
     if (data[0] & 15) == 8:   #closed connection
         if(socketType) == "/chatsocket":
-                __chatSockets__.remove(username)
+                __chatSockets__.pop(username)
         return None
 
     frameBytes = 0  
