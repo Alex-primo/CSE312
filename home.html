@@ -1,24 +1,29 @@
+<!DOCTYPE html>
 <html>
-<!-- <head>
-    <title>CSE312 Sample Front End</title>
+<head>
+    <title>Homepage</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
-<!-- <body onload="welcomeAlert();"> -->
+    <!-- <body onload="welcomeAlert();"> -->
 <body>
-    <a href="/profile" style="text-align: center;">Profile</a>
-    <a href="/chat" style="text-align: center;">CHAT</a>
-<br></br>
-{{login mess}}
-<br></br>
-{{token found}}
+    <div class="side left">
+        <div class="center">
+                <a class="profileButton" href="/profile" style="text-align: center;">Profile</a>
+                <br></br>
+                <br></br>
+                {{login mess}}
+                <br></br>
+                {{token found}}
 
-<div>
-    {users logged in}
-</div>
-
-
-
-
+                <div>
+                    {users logged in}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="side right">
+        <h1>Does this side work</h1>
+    </div>
 </body>
 <!-- <script src="functions.js"></script> -->
 </html>
