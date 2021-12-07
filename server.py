@@ -40,6 +40,33 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 self.request.sendall(respond.encode() + b.encode())
                     
                 self.request.sendall(respond.encode() + b)
+
+            elif headersDict['PATH'] == '/image-upload':
+                if headersDict['REQUEST'] == 'POST':
+                    print("Profile Image", headersDict['PATH'])
+                    temp = parseImage(headersDict,self)     #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
+                    # print("Here",temp)
+
+                    data = received_data.decode()
+                    username = findToken(data)
+                    f = "image/" + username
+                    with open(f, "wb") as file:
+                        file.write(temp)
+
+                    pic = ""
+                    pic += "<img src=" + "imup/" + str(username) + ">" + "<br>"
+
+                    with open("profile.html", "r") as file:
+                        b = file.read()
+                        c = "{{up load image}}"
+                        b = b.replace(c, pic)
+                        respond = "HTTP/1.1 200 OK\r\n"
+                        respond += "Content-Type: text/html; charset=utf-8\r\n"
+                        respond += "X-Content-Type-Options: nosniff\r\n"
+                        respond += "ContentLength: " + str(len(b)) + "\r\n"
+                        respond += "\r\n"
+                        print(b)
+                        self.request.sendall(respond.encode() + b.encode())
   
 
             elif headersDict['PATH'] == "/LogReg.js":
@@ -336,31 +363,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     respond += "\r\n"
                     self.request.sendall(respond.encode())
 
-            elif headersDict['PATH'] == '/image-upload':
-                if headersDict['REQUEST'] == 'POST':
-                    print("Profile Image", headersDict['PATH'])
-                    temp = parseImage(headersDict,self)     #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
-
-                    data = received_data.decode()
-                    username = findToken(data)
-                    f = "image/" + username
-                    with open(f, "wb") as file:
-                        file.write(temp)
-
-                    pic = ""
-                    pic += "<img src=" + "imup/" + str(username) + ">" + "<br>"
-
-                    with open("profile.html", "r") as file:
-                        b = file.read()
-                        c = "{{up load image}}"
-                        b = b.replace(c, pic)
-                        respond = "HTTP/1.1 200 OK\r\n"
-                        respond += "Content-Type: text/html; charset=utf-8\r\n"
-                        respond += "X-Content-Type-Options: nosniff\r\n"
-                        respond += "ContentLength: " + str(len(b)) + "\r\n"
-                        respond += "\r\n"
-                        print(b)
-                        self.request.sendall(respond.encode() + b.encode())
+            
             
             elif '/imup/' in headersDict['PATH']:
                 up = ""
@@ -407,7 +410,10 @@ def makeHeaderDict(data):
     path = firstLine[firstLine.index(request+' ')+len(request)+1 : firstLine.index(' HTTP')]
     finalDict['REQUEST'] = request
     finalDict['PATH']  = path
-    finalDict['DATA'] = data[data.index("\r\n\r\n".encode())+4:].decode()
+    if finalDict['PATH']  == "/image-upload":
+        finalDict['DATA'] = data[data.index("\r\n\r\n".encode())+4:]
+    if finalDict['PATH']  != "/image-upload":    
+        finalDict['DATA'] = data[data.index("\r\n\r\n".encode())+4:].decode()
     return finalDict
 
 
@@ -591,7 +597,7 @@ def validatePassword(password):
 
 def parseImage(headerDict, TCP):
 
-    if int(headerDict['Content-Length']) > 2048:
+    if int(headerDict['Content-Length']) > 4096:
             notDone = True
             while notDone == True:
                 temp = TCP.request.recv(2048)
