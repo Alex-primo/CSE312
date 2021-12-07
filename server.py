@@ -68,7 +68,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     data = received_data
                     head = "\r\n\r\n".encode()
                     data = data.split(head)
-                    print("DATA 0",data[0])
+                    # print("DATA 0",data[0])
                     data = data[0].decode()
                     
                     username = findToken(data)
@@ -219,6 +219,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             elif headersDict['PATH'] == "/home":
                 data = received_data.decode()
                 with open("home.html", "r") as file:
+                    tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
+                    if tokenFound != None:
+                        if tokenFound not in UsersLoggedIn:
+                            UsersLoggedIn.append(tokenFound)
                     b = file.read()
                     print(b)
                     l = "{users logged in}"
@@ -229,7 +233,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         r = r + "<form action=" + "/dm" + " " + "id=" + "dm-form" + " " +  "method=" + "post" + " " +  "enctype=" + "multipart/form-data" + "><label for=" + "text-form-name" + ">Your Username: </label><input id=" + "text-form-message" + " " +  "type=" + "text" + " " +  "name=" + "DM2" + "><br/><label for=" + "form-message" + ">Message: </label><input id="+ "form-message" + " " +  "type=" +"text" + " " +  "name="+ i + "><input type=" + "submit" + " " +  "value=" + "Submit" + "></form><br>"
                                                                                                                                                                                                                 #this could be a hidden feild or just use there token. The username of the current user/sender of the DM                                                                                                                                                             # i is the username of the person you are sending the DM to
                     b = b.replace(l, r)
-                    tokenFound = findToken(data)  # send it data and it will return the current users USERNAME from the token
+                    
                     if tokenFound != None:
                         l2 = "{{login mess}}"
                         r2 = "<h1>" + str(tokenFound) + " is signed in </h1>"
