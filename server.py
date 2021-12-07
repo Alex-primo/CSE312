@@ -8,10 +8,8 @@ import bcrypt
 
 global __mainCollection__
 global __chatSockets__
-global __colorSockets__
-__chatSockets__ = []
-__colorSockets__ = []
 
+__chatSockets__ = {}
 UsersLoggedIn = []
 
 dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
@@ -395,7 +393,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     self.request.sendall(respond.encode())
 
 
-            elif headersDict['PATH'] == "/chatsocket" or headersDict['PATH'] == "/colorsocket":
+            elif headersDict['PATH'] == "/chatsocket":
+                username = findToken(received_data.decode())
                 GUID  = headersDict["Sec-WebSocket-Key"] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
                 acceptKey = hashlib.sha1(GUID.encode()).digest()
                 acceptKey = base64.b64encode(acceptKey)
@@ -409,13 +408,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 response += acceptKey
                 self.request.sendall(response)
                 if(headersDict['PATH']) == "/chatsocket":   #chat is the chat and color will be color array
-                    __chatSockets__.append(self)
-                elif(headersDict['PATH']) == "/colorsocket":
-                    __colorSockets__.append(self)
+                    __chatSockets__[username] = self
                 while True:
                     received_data = self.request.recv(2048)
-                    print("recieved socket data")
-                    webSocketData(self,received_data,headersDict['PATH'])
+                    webSocketData(self,received_data,headersDict['PATH'],username)
 
             elif headersDict['REQUEST'] == 'POST':
                 if headersDict['PATH'] == '/image-upload':
@@ -659,14 +655,11 @@ def parseImage(headerDict, TCP):
     return None
 
 #handle when a socket sends data, and push that data to all other sockets
-def webSocketData(tcp,data,socketType):
+def webSocketData(tcp,data,socketType,username):
     global __chatSockets__
-    global __colorSockets__
     if (data[0] & 15) == 8:   #closed connection
         if(socketType) == "/chatsocket":
-                __chatSockets__.remove(tcp)
-        elif(socketType) == "/colorsocket":
-                __colorSockets__.remove(tcp)
+                __chatSockets__.remove(username)
         return None
 
     frameBytes = 0  
@@ -696,7 +689,28 @@ def webSocketData(tcp,data,socketType):
     payload = payload.replace('&',"&amp;")
     payload = payload.replace('<',"&lt;")
     payload = payload.replace('>',"&gt;")
-    
+    temp = '{"username":"'+username+'",'+payload[1:]
+    jsonDict = json.loads(temp)
+    if 'recipient' in jsonDict:
+        for i in __chatSockets__:
+            if jsonDict['recipient'] == i:  #from x
+                temp = '{"dm":"From","username":"'+username+'",'+payload[1:]
+                print(temp)
+                __chatSockets__[i].request.sendall(makeSocketPayload(temp))
+
+            if jsonDict['username'] == i:  #to x
+                temp = '{"dm":"To","username":"'+jsonDict['recipient']+'",'+payload[1:]
+                print(temp)
+                print('IN TO SEND')
+                __chatSockets__[i].request.sendall(makeSocketPayload(temp))
+    else:
+        payload = '{"username":"'+username+'",'+payload[1:]
+        for i in __chatSockets__:
+            __chatSockets__[i].request.sendall(makeSocketPayload(payload))
+    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
+
+def makeSocketPayload(payload):
     offset = 0
     response = 129
     payloadLength = len(payload)
@@ -716,14 +730,8 @@ def webSocketData(tcp,data,socketType):
     else:
         response = response<<8 | payloadLength
         response = response.to_bytes(offset+2,'big')
-    
-    response = b"".join([response,payload.encode()])
-    if(socketType) == "/chatsocket":
-            for i in __chatSockets__:
-                i.request.sendall(response)
-    elif(socketType) == "/colorsocket":
-            for i in __colorSockets__:
-                i.request.sendall(response)
+        
+    return b"".join([response,payload.encode()])
 
 
 def noHTML(x):

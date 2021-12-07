@@ -22,8 +22,19 @@
         </div>
     </div>
     <div class="side right">
-        <h1>Does this side work</h1>
+        
+        Enter username of person to DM, leave blank for global chat
+        <br>
+        <br>
+        <label for="chat-dm">Recipient: </label>
+        <input id="chat-dm" type="text" name="dm">
+        <br>
+        <label for="chat-comment">Comment: </label>
+        <input id="chat-comment" type="text" name="comment">
+
+        <button onclick="sendMessage()">Chat</button>
+        <div id="chat"></div>
     </div>
 </body>
-<!-- <script src="functions.js"></script> -->
+<script src="chat.js"></script>
 </html>
