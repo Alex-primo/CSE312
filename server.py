@@ -232,7 +232,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     r = "<h3>List of logged in users</h3><br>"
                     for i in UsersLoggedIn:
                         r = r + "<img class='myimage' src=" + "imup/" + str(i) + ">" # this gets there profile picture if they have one saved  # image/[username] is where the image is stored
-                        r = r + "<h5>" + i + " is currently logged in </h5>"
+                        r = r + "<h5>" + i + " is currently logged in </h5>" + "<br>"
                                                                                                                                                                                                     
                     b = b.replace(l, r)
                     
