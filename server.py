@@ -362,7 +362,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     print("start salt")
                     cookToken = loginToken(username)
                     print("cookie salt", cookToken)
-                    UsersLoggedIn.append(username)
+                    if username not in UsersLoggedIn:
+                            UsersLoggedIn.append(username)
                     with open("home.html", "r") as file:
                         b = file.read()
                         l = "{{login mess}}"
