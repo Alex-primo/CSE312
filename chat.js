@@ -30,10 +30,10 @@ function chatMessage(message) {
    let chat = document.getElementById('chat');
    if(chatMessage['dm'] !== undefined){
       if(chatMessage['dm'] == 'To'){
-      chat.innerHTML += "<b>" +chatMessage['dm']+' '+ chatMessage['username'] + "</b>: " + chatMessage["comment"] + "<br/>";
+      chat.innerHTML += "<p class='DM'>" + "<b>" +chatMessage['dm']+' '+ chatMessage['username'] + "</b>: " + chatMessage["comment"] + "</p>" + "<br/>";
       }
       if(chatMessage['dm'] == 'From'){
-      chat.innerHTML += "<b>" +chatMessage['dm']+' '+ chatMessage['username'] + "</b>: " + chatMessage["comment"] + "<br/>";
+      chat.innerHTML += "<p class='DM'>" + "<b>" +chatMessage['dm']+' '+ chatMessage['username'] + "</b>: " + chatMessage["comment"] + "</p>" + "<br/>";
       }
    }
    else{

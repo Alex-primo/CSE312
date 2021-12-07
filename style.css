@@ -148,3 +148,7 @@ body {
 .profileButton:focus {
     outline: none;
 }
+
+.DM {
+    color: magenta;
+}
