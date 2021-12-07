@@ -65,8 +65,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     print("Profile Image", headersDict['PATH'])
                     temp = parseImage(headersDict,self)     #REMOVE THIS COMMENT temp here is the image bits, so like store it with the person in the database
                     # print("Here",temp)
-
-                    data = received_data.decode()
+                    data = received_data
+                    head = "\r\n\r\n".encode()
+                    data = data.split(head)
+                    print("DATA 0",data[0])
+                    data = data[0].decode()
+                    
                     username = findToken(data)
                     f = "image/" + username
                     with open(f, "wb") as file:
