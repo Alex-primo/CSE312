@@ -6,13 +6,18 @@ import pymongo
 import json
 import bcrypt
 
-
+global __mainCollection__
 global __chatSockets__
 global __colorSockets__
 __chatSockets__ = []
 __colorSockets__ = []
 
 UsersLoggedIn = []
+
+dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
+#dbconnect = pymongo.MongoClient()           #swap to for local testing
+db = dbconnect['main']
+__mainCollection__ = db["users"]
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -230,8 +235,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     for i in UsersLoggedIn:
                         r = r + "<img src=" + "imup/" + str(i) + ">" + "<br>" # this gets there profile picture if they have one saved  # image/[username] is where the image is stored
                         r = r + "<h5>" + i + " is currently logged in </h5>"
-                        r = r + "<form action=" + "/dm" + " " + "id=" + "dm-form" + " " +  "method=" + "post" + " " +  "enctype=" + "multipart/form-data" + "><label for=" + "text-form-name" + ">Your Username: </label><input id=" + "text-form-message" + " " +  "type=" + "text" + " " +  "name=" + "DM2" + "><br/><label for=" + "form-message" + ">Message: </label><input id="+ "form-message" + " " +  "type=" +"text" + " " +  "name="+ i + "><input type=" + "submit" + " " +  "value=" + "Submit" + "></form><br>"
-                                                                                                                                                                                                                #this could be a hidden feild or just use there token. The username of the current user/sender of the DM                                                                                                                                                             # i is the username of the person you are sending the DM to
+                                                                                                                                                                                                    
                     b = b.replace(l, r)
                     
                     if tokenFound != None:
@@ -508,33 +512,23 @@ def hashedPassword(username, password):
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode(), salt)
     print("Hashed Password", hashed)
-
-    dbconnect = pymongo.MongoClient('mongodb://mongo:27017/')
-    db = dbconnect['hw3']
-    collect = db["passwords"]
         
     regdic = {}
     regdic["username"] = username
     regdic["password"] = hashed
     print("insert register",regdic)
-    collect.insert_one(regdic)
+    __mainCollection__.insert_one({'username': username, 'password': hashed})
 
 def userLookUp(username):
-    dbconnect = pymongo.MongoClient('mongodb://mongo:27017/')
-    db = dbconnect['hw3']
-    collect = db["passwords"]
-    for k in collect.find({},{"_id": 0, "username": 1}):
+    for k in __mainCollection__.find({},{"_id": 0, "username": 1}):
         print("userLook", k, k["username"])
         if str(k["username"]) == username:
             return True
     return False
 
 def passwordCheck(username):
-    dbconnect = pymongo.MongoClient('mongodb://mongo:27017/')
-    db = dbconnect['hw3']
-    collect = db["passwords"]
     hashedPass = ""
-    for k in collect.find({},{"_id": 0, "username": 1, "password": 1}):
+    for k in __mainCollection__.find({},{"_id": 0, "username": 1, "password": 1}):
         print("userLook", k, k["password"])
         if str(k["username"]) == username:
             hashedPass = k["password"]
@@ -576,20 +570,9 @@ def findToken(data):
         a1Hash = a1Hash.digest()
         print("Checking SHA256 hash",a1Hash)
 
-
-        dbconnect = pymongo.MongoClient('mongodb://mongo:27017/')
-        db = dbconnect['hw3']
-        collect = db["salts"]
-        username = ""
-        for k in collect.find({},{"_id": 0, "username": 1, "token": 1}):
-            print("userLook", k, k["token"])
-            if k["token"] == a1Hash:
-                username = k["username"]
-
-        print("SHA256 username",username)
-
-
-        return username
+        if __mainCollection__.count_documents({'token': a1Hash}) == 1:
+            return __mainCollection__.find({'token': a1Hash})[0]['username']
+        return None
     else:
         return None
 
@@ -606,21 +589,10 @@ def loginToken(username):
     a1Hash = a1Hash.digest()
     print("SHA256 hash",a1Hash)
 
-    dbconnect = pymongo.MongoClient('mongodb://mongo:27017/')
-    db = dbconnect['hw3']
-    collect = db["salts"]
-    print("made salt")
-    
-    regdic = {}
-    regdic["username"] = username
-    regdic["token"] = a1Hash
-    print("insert salts", randomToken, regdic)
-    collect.insert_one(regdic)
+    __mainCollection__.update_one({'username': username},  {'$set': {'token': a1Hash}}) 
 
     return randomToken
 
-
-    
 
 def validatePassword(password):
     eightLen = 0
