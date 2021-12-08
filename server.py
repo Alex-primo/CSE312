@@ -17,8 +17,8 @@ __chatSockets__ = {}
 UsersLoggedIn = []
 clicks = 0
 
-dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
-#dbconnect = pymongo.MongoClient()           #swap to for local testing
+# dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
+dbconnect = pymongo.MongoClient()           #swap to for local testing
 db = dbconnect['main']
 __mainCollection__ = db["users"]
 
@@ -254,7 +254,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     
                     if tokenFound != None:
                         l2 = "{{login mess}}"
-                        r2 = "<h1>" + str(tokenFound) + " is signed in </h1>"
+                        r2 = "<h1>" + str(tokenFound) + " is signed in </h1><script>let username='"+str(tokenFound)+"'</script>"
                         b = b.replace(l2, r2)
                         c = "{{token found}}"
                         r = "<h1>Welcome back " + str(tokenFound) + "!</h1>"
@@ -383,9 +383,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     with open("home.html", "r") as file:
                         b = file.read()
                         l = "{{login mess}}"
-                        r = "<h1>" + username + " is signed in </h1>"
+                        r = "<h1>" + username + " is signed in </h1><script>let username='"+username+"'</script>"
                         b = b.replace(l, r)
-                        print(b)
+                        print("\n\n\t\t-------\n\n"+b)
                         l = "{users logged in}"
                         r = "<h3>List of logged in users</h3><br>"
                         for i in UsersLoggedIn:
@@ -746,20 +746,27 @@ def webSocketData(tcp,data,socketType,username):
     payload = payload.replace('>',"&gt;")
     temp = '{"username":"'+username+'",'+payload[1:]
     jsonDict = json.loads(temp)
-    if 'recipient' in jsonDict:
+    # print("\n\t\t00000000000000000000000000000000000\n")
+    print(jsonDict)
+    if 'emoji' in jsonDict:
+        temp = '{"username":"'+username+'",'+payload[1:]
+        for i in __chatSockets__:
+            __chatSockets__[i].request.sendall(makeSocketPayload(temp))
+    elif 'recipient' in jsonDict:
+        idchat = generateIdForChat(40)
         for i in __chatSockets__:
             if jsonDict['recipient'] == i:  #from x
-                temp = '{"dm":"From","username":"'+username+'",'+payload[1:]
+                temp = '{"dm":"From","id":"'+idchat+'","username":"'+username+'",'+payload[1:]
                 print(temp)
                 __chatSockets__[i].request.sendall(makeSocketPayload(temp))
 
             if jsonDict['username'] == i:  #to x
-                temp = '{"dm":"To","username":"'+jsonDict['recipient']+'",'+payload[1:]
+                temp = '{"dm":"To","id":"'+idchat+'","username":"'+jsonDict['recipient']+'",'+payload[1:]
                 print(temp)
                 print('IN TO SEND')
                 __chatSockets__[i].request.sendall(makeSocketPayload(temp))
     else:
-        payload = '{"username":"'+username+'",'+payload[1:]
+        payload = '{"id":"'+generateIdForChat(40)+'","username":"'+username+'",'+payload[1:]
         for i in __chatSockets__:
             __chatSockets__[i].request.sendall(makeSocketPayload(payload))
     print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
@@ -821,10 +828,15 @@ def noHTML(x):
     d = c.replace(">", "&gt")
     return d
 
+import string 
+import random
+ascii_letters = string.ascii_letters
+def generateIdForChat(n:int):
+    return ''.join([random.choice(ascii_letters) for i in range(n)])
 
 if __name__ == "__main__":
     HOST, PORT = "0.0.0.0", 8000
-    
+    print(HOST,PORT)
     server = socketserver.ThreadingTCPServer((HOST,PORT), MyTCPHandler)
     server.serve_forever()
 
