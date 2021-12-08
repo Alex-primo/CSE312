@@ -5,12 +5,17 @@ import base64
 import pymongo
 import json
 import bcrypt
+import sys
 
 global __mainCollection__
 global __chatSockets__
+global __cookieSockets__
+global clicks
 
+__cookieSockets__ = {}
 __chatSockets__ = {}
 UsersLoggedIn = []
+clicks = 0
 
 dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
 #dbconnect = pymongo.MongoClient()           #swap to for local testing
@@ -63,6 +68,17 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     
                 self.request.sendall(respond.encode() + b)
 
+            elif headersDict['PATH'] == "/Cookie":
+                with open("Cookie.html", "r") as file:
+                    b = file.read()
+                        
+                respond = "HTTP/1.1 200 OK\r\n"
+                respond += "Content-Type: text/html; charset=utf-8\r\n"
+                respond += "X-Content-Type-Options: nosniff\r\n"
+                respond += "ContentLength: " + str(len(b)) + "\r\n"
+                respond += "\r\n"
+                self.request.sendall(respond.encode() + b.encode())
+
             elif headersDict['PATH'] == '/image-upload':
                 if headersDict['REQUEST'] == 'POST':
                     print("Profile Image", headersDict['PATH'])
@@ -95,7 +111,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(respond.encode() + b.encode())
   
 
-            elif headersDict['PATH'] == "/LogReg.js" or headersDict['PATH'] == "/chat.js":
+            elif headersDict['PATH'] == "/LogReg.js" or headersDict['PATH'] == "/chat.js" or headersDict['PATH'] == "/Cookieclick.js":
                 with open(headersDict['PATH'][1:], "rb") as file:
                     b = file.read()
                 
@@ -393,6 +409,32 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     respond += "\r\n"
                     self.request.sendall(respond.encode())
 
+            elif headersDict['PATH'] == "/cookieclick":
+                print("Inside cookie")
+                data = received_data.decode()
+                username = findToken(data)
+                GUID  = headersDict["Sec-WebSocket-Key"] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+                acceptKey = hashlib.sha1(GUID.encode()).digest()
+                acceptKey = base64.b64encode(acceptKey)
+                acceptKey += b'\r\n\r\n'
+
+                response = "HTTP/1.1 101 Switching Protocols\r\n"
+                response += "Upgrade: websocket\r\n"
+                response += "Connection: Upgrade\r\n"
+                response += "Sec-WebSocket-Accept: "
+                response = response.encode()
+                response += acceptKey
+                self.request.sendall(response)
+                print("Inside cookie after send")
+                if(headersDict['PATH']) == "/cookieclick":   #chat is the chat and color will be color array
+                    __cookieSockets__[username] = self
+                    print(__cookieSockets__)
+                print("Inside cookie starting loop")
+                while True:
+                    received_data = self.request.recv(2048)
+                    print("Inside cookie calling websocket")
+                    webSocketDataCookie(self,received_data,headersDict['PATH'],username)
+
 
             elif headersDict['PATH'] == "/chatsocket":
                 username = findToken(received_data.decode())
@@ -444,6 +486,18 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 respond += "ContentLength: " + str(len(b)) + "\r\n"
                 respond += "\r\n"
                 self.request.sendall(respond.encode() + b)
+
+            elif '/Transparent-Cookie.png' == headersDict['PATH']:
+                with open("Transparent-Cookie.png", "rb") as file:
+                    b = file.read()
+                
+                respond = "HTTP/1.1 200 OK\r\n"
+                respond += "Content-Type: image/jpeg\r\n"
+                respond += "X-Content-Type-Options: nosniff\r\n"
+                respond += "ContentLength: " + str(len(b)) + "\r\n"
+                respond += "\r\n"
+                self.request.sendall(respond.encode() + b)
+
 
         
 
@@ -708,6 +762,32 @@ def webSocketData(tcp,data,socketType,username):
         payload = '{"username":"'+username+'",'+payload[1:]
         for i in __chatSockets__:
             __chatSockets__[i].request.sendall(makeSocketPayload(payload))
+    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
+#handle when a socket sends data, and push that data to all other sockets
+def webSocketDataCookie(tcp,data,socketType,username):
+    global __cookieSockets__
+    global clicks
+    print("Inside cookie websocket")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
+    print("starting if")
+    if (data[0] & 15) == 8:   #closed connection
+        print("closed")
+        if(socketType) == "/cookiesocket":
+            __cookieSockets__.pop(username)
+            print("Closed 3")
+        return None
+    clicks += 1
+    print("here")
+    temp = '{"clicks":"'+str(clicks)+'"}'
+    print(temp)
+    jsonDict = json.loads(temp)
+    print("Sending")
+    for i in __cookieSockets__:
+        print("Temp worked", i)
+        __cookieSockets__[i].request.sendall(makeSocketPayload(temp))
     print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
 
