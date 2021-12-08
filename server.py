@@ -17,8 +17,8 @@ __chatSockets__ = {}
 UsersLoggedIn = []
 clicks = 0
 
-# dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
-dbconnect = pymongo.MongoClient()           #swap to for local testing
+dbconnect = pymongo.MongoClient('mongo')    #swap to for docker testing                         #REMEMBER TO SWAP BACK!!!!!!!
+# dbconnect = pymongo.MongoClient()           #swap to for local testing
 db = dbconnect['main']
 __mainCollection__ = db["users"]
 
