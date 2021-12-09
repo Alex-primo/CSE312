@@ -14,7 +14,7 @@ TBD
 #### Multimedia Content:
 Users can upload unique avatars to express themselves while chatting
 #### Live Interactions between users via websockets:
-Users will interact with a single pixel in large pixel canvas to make pixel art with other users
+Users can thumbs up / thumbs down chat messages and also play cookie clicker
 
 ### Project Requirements:
 - [ ] Create directory - "reports"
